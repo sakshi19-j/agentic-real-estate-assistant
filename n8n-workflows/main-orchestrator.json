@@ -24,7 +24,7 @@
         "promptType": "define",
         "text": "={{ $json.body.message }}",
         "options": {
-          "systemMessage": "You are a friendly real estate assistant for home buyers in Maharashtra, India. Help users find properties and answer their questions. Keep replies short and clear. Show prices in lakh or crore. Never invent property details; if you don't have the information, say so."
+          "systemMessage": "   You are a friendly real estate assistant for home buyers in Maharashtra, India. When the user asks about properties, ALWAYS use the search_properties tool and answer only from its results. Never invent properties or prices. Show prices in lakh or crore. Present up to 3 matches with title, location, price, and bedrooms. If nothing matches, say so and suggest adjusting the budget or city. Keep replies short."
         }
       },
       "id": "9a0d44df-57fb-4826-b8c0-23c5d9c8c3f1",
@@ -85,6 +85,31 @@
         400,
         -176
       ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search available properties in the database. Call this whenever the user asks about properties, prices, cities or bedrooms. Use empty string for city and 0 for max_price or min_bedrooms when the user did not specify them. Prices are in INR (1 lakh = 100000, 1 crore = 10000000).",
+        "operation": "executeQuery",
+        "query": "SELECT id, title, type, price, city, location, bedrooms, bathrooms, area_sqft FROM properties WHERE ($1::text = '' OR city ILIKE $1::text) AND ($2::numeric = 0 OR price <= $2::numeric) AND ($3::int = 0 OR bedrooms >= $3::int) ORDER BY price ASC LIMIT 5;",
+        "options": {
+          "queryReplacement": "={{ [ $fromAI('city', 'City name such as Solapur or Pune. Empty string if not specified', 'string'), $fromAI('max_price', 'Maximum price in INR as a number. 0 if not specified', 'number'), $fromAI('min_bedrooms', 'Minimum number of bedrooms. 0 if not specified', 'number') ] }}"
+        }
+      },
+      "id": "9fbd0b91-0a9c-4a66-a84b-043fb8b1c90c",
+      "name": "search_properties",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        16
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "KlTBioqsWsjfuq80",
+          "name": "Supabase Postgres"
+        }
+      }
     }
   ],
   "connections": {
@@ -127,6 +152,17 @@
           {
             "node": "AI Agent",
             "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_properties": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]
