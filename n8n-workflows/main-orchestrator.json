@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "ad0e13bc-0aaa-4dc7-9150-9d92fdef5675",
+      "name": "Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -192
+      ],
+      "webhookId": "d3f1c2a4-7b5e-4c1a-9a55-1e2f3a4b5c6d"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: 'Got your message: ' + $json.body.message, properties: [] }) }}",
+        "options": {}
+      },
+      "id": "c831a394-09e6-45fb-92fb-25d82adbb0e2",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -192
+      ]
+    }
+  ],
+  "connections": {
+    "Chat Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "dc1db30fa2198fe1568d4c4f7f4af0c8b4c8aaf6a451a684461c505ceee28d1f"
+  }
+}
