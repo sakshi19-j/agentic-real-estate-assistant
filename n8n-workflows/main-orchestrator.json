@@ -152,6 +152,29 @@
           "name": "Hugging Face account"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversations (session_id, last_message, message_count, lead_score, last_intent, created_at)\nVALUES ($1, $2, 1,\n  CASE\n    WHEN $2 ILIKE '%visit%' OR $2 ILIKE '%schedule%' OR $2 ILIKE '%emi%' OR $2 ILIKE '%book%' THEN 'hot'\n    WHEN $2 ILIKE '%budget%' OR $2 ILIKE '%lakh%' OR $2 ILIKE '%crore%' OR $2 ILIKE '%price%' THEN 'warm'\n    ELSE 'cold'\n  END,\n  'general', now())\nON CONFLICT (session_id) DO UPDATE SET\n  last_message = EXCLUDED.last_message,\n  message_count = conversations.message_count + 1,\n  lead_score = CASE\n    WHEN conversations.lead_score = 'hot' THEN 'hot'\n    WHEN EXCLUDED.lead_score = 'hot' THEN 'hot'\n    WHEN conversations.lead_score = 'warm' OR EXCLUDED.lead_score = 'warm' THEN 'warm'\n    ELSE 'cold'\n  END\nRETURNING session_id, lead_score, message_count;",
+        "options": {
+          "queryReplacement": "={{ [ $('Chat Webhook').item.json.body.session_id, $('Chat Webhook').item.json.body.message ] }}"
+        }
+      },
+      "id": "81765686-2042-4d8a-b3ca-1b983a457ad3",
+      "name": "Score and Log Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -320,
+        272
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "KlTBioqsWsjfuq80",
+          "name": "Supabase Postgres"
+        }
+      }
     }
   ],
   "connections": {
@@ -160,6 +183,11 @@
         [
           {
             "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Score and Log Lead",
             "type": "main",
             "index": 0
           }
@@ -230,6 +258,11 @@
             "index": 0
           }
         ]
+      ]
+    },
+    "Score and Log Lead": {
+      "main": [
+        []
       ]
     }
   },
