@@ -24,7 +24,7 @@
         "promptType": "define",
         "text": "={{ $json.body.message }}",
         "options": {
-          "systemMessage": "   You are a friendly real estate assistant for home buyers in Maharashtra, India. When the user asks about properties, ALWAYS use the search_properties tool and answer only from its results. Never invent properties or prices. Show prices in lakh or crore. Present up to 3 matches with title, location, price, and bedrooms. If nothing matches, say so and suggest adjusting the budget or city. Keep replies short."
+          "systemMessage": "You are a friendly real estate assistant for home buyers in Maharashtra, India. Use the search_properties tool for finding listings by city, budget or bedrooms. Use the search_brochures tool for questions about amenities, RERA registration, possession dates, payment plans, builders or FAQs of a specific project. Answer only from tool results. Never invent properties, prices or details; if the information isn't in the results, say you don't have it. Show prices in lakh or crore. Present up to 3 matches. Keep replies short."
         }
       },
       "id": "9a0d44df-57fb-4826-b8c0-23c5d9c8c3f1",
@@ -110,6 +110,48 @@
           "name": "Supabase Postgres"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the official project brochures. Use this for questions about amenities, RERA registration, possession date, payment plan, builder, nearby landmarks or FAQs of a specific project. Include the project name in the query.",
+        "tableName": "brochure_chunks",
+        "options": {}
+      },
+      "id": "46ad5259-4f06-4e97-a6c2-cc43f88bc200",
+      "name": "search_brochures",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "KlTBioqsWsjfuq80",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "sentence-transformers/all-MiniLM-L6-v2",
+        "options": {}
+      },
+      "id": "015426f5-4ad4-4344-bb30-6e345edb0051",
+      "name": "HF Embeddings Query",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        528,
+        304
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "4q6doYi1JfQglep3",
+          "name": "Hugging Face account"
+        }
+      }
     }
   ],
   "connections": {
@@ -163,6 +205,28 @@
           {
             "node": "AI Agent",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_brochures": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HF Embeddings Query": {
+      "ai_embedding": [
+        [
+          {
+            "node": "search_brochures",
+            "type": "ai_embedding",
             "index": 0
           }
         ]
