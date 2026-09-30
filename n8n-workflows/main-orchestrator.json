@@ -175,6 +175,63 @@
           "name": "Supabase Postgres"
         }
       }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "properties",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "6f777d15-b45e-4d24-a603-03e0f3937283",
+      "name": "Properties Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        480
+      ],
+      "webhookId": "ee47cc37-7b9b-47be-8a74-c8718e94492a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COALESCE(json_agg(property), '[]'::json) AS properties FROM (SELECT id, title, type, price, city, location, bedrooms, bathrooms, area_sqft, status FROM properties WHERE ($1::text = '' OR city ILIKE $1::text) AND ($2::int = 0 OR bedrooms = $2::int) ORDER BY price ASC) AS property;",
+        "options": {
+          "queryReplacement": "={{ [ $json.query.city || '', Number($json.query.bedrooms || 0) ] }}"
+        }
+      },
+      "id": "e9ec415e-8180-4822-9b22-1f18da4e5e2a",
+      "name": "Query Properties",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        480
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "KlTBioqsWsjfuq80",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ properties: $json.properties }) }}",
+        "options": {}
+      },
+      "id": "12aa9f40-026e-4f2a-a808-c6ab7fe5d442",
+      "name": "Return Properties",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        480
+      ]
     }
   ],
   "connections": {
@@ -263,6 +320,28 @@
     "Score and Log Lead": {
       "main": [
         []
+      ]
+    },
+    "Properties Webhook": {
+      "main": [
+        [
+          {
+            "node": "Query Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Properties": {
+      "main": [
+        [
+          {
+            "node": "Return Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
